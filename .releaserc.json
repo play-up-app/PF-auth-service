@@ -1,0 +1,54 @@
+{
+  "tagFormat": "auth-service-v${version}",
+  "branches": [
+    "main", 
+    {"name": "develop", "prerelease": "beta"}
+  ],
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "conventionalcommits",
+      "releaseRules": [
+        {"type": "feat", "scope": "auth", "release": "minor"},
+        {"type": "fix", "scope": "auth", "release": "patch"},
+        {"type": "perf", "scope": "auth", "release": "patch"},
+        {"type": "docs", "scope": "auth", "release": false},
+        {"type": "style", "scope": "auth", "release": false},
+        {"type": "refactor", "scope": "auth", "release": "patch"},
+        {"type": "test", "scope": "auth", "release": false},
+        {"breaking": true, "scope": "auth", "release": "major"}
+      ]
+    }],
+    ["@semantic-release/release-notes-generator", {
+      "preset": "conventionalcommits",
+      "presetConfig": {
+        "types": [
+          {"type": "feat", "section": "✨ Nouvelles fonctionnalités"},
+          {"type": "fix", "section": "🐛 Corrections"},
+          {"type": "perf", "section": "⚡ Optimisations"},
+          {"type": "refactor", "section": "♻️ Refactoring"},
+          {"type": "docs", "section": "📚 Documentation", "hidden": false},
+          {"type": "security", "section": "🔒 Sécurité", "hidden": false}
+        ]
+      }
+    }],
+    ["@semantic-release/changelog", {
+      "changelogFile": "CHANGELOG.md"
+    }],
+    ["@semantic-release/git", {
+      "assets": [
+        "CHANGELOG.md",
+        "package.json",
+        "package-lock.json"
+      ],
+      "message": "chore(auth): release v${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+    }],
+    ["@semantic-release/github", {
+      "assets": [
+        {
+          "path": "Dockerfile",
+          "label": "Auth Service Dockerfile v${nextRelease.version}"
+        }
+      ]
+    }]
+  ]
+}
