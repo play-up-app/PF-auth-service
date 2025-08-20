@@ -5,14 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "dev": "nodemon index.js",
     "start": "node index.js"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "@prisma/client": "^6.11.1",
     "@supabase/supabase-js": "^2.50.5",
@@ -36,8 +32,5 @@
     "prisma": "^6.11.1",
     "semantic-release": "^23.0.2",
     "supertest": "^6.3.4"
-  },
-  "overrides": {
-    "glob": "^10.4.5"
   }
 }

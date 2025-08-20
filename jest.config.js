@@ -1,4 +1,5 @@
-export default {
+
+const config = {
   testEnvironment: 'node',
   transform: {},
   moduleNameMapper: {
@@ -6,22 +7,23 @@ export default {
   },
   coverageDirectory: './coverage',
   collectCoverageFrom: [
-    'services/**/*.js',
-    'routes/**/*.js',
     'middleware/**/*.js',
-    '!**/node_modules/**',
-    '!**/vendor/**',
+    'routes/**/*.js',
+    'services/**/*.js',
+    '!**/node_modules/**'
   ],
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
-      statements: 80,
-    },
+      statements: 80
+    }
   },
-  verbose: true,
-  testMatch: ['**/tests/**/*.test.js'],
-  testPathIgnorePatterns: ['/node_modules/'],
-  moduleFileExtensions: ['js', 'json'],
-}
+  testMatch: [
+    '**/tests/**/*.test.js'
+  ],
+  verbose: true
+};
+
+export default config;
