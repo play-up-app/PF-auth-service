@@ -70,5 +70,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/auth-service:v${{ steps.version.outputs.version }}
-            ghcr.io/${{ github.repository }}/auth-service:latest
+            ghcr.io/${{ github.repository_owner }}/auth-service:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/auth-service:latest
