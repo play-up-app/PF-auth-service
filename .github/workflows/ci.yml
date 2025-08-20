@@ -73,7 +73,8 @@ jobs:
       - name: Get Version
         id: version
         run: |
-          VERSION=$(npx semantic-release --dry-run | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.1")
+          # Juste analyser les commits sans essayer de créer une release
+          VERSION=$(npx semantic-release --dry-run --no-ci --branches develop | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.1")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build and push
