@@ -4,13 +4,14 @@ import { AuthService } from '../services/authService.js'
 import { authLimiter, createAccountLimiter } from '../middleware/rateLimiter.js'
 import { validateRequest } from '../middleware/validateRequest.js'
 import { registerSchema, loginSchema, updateProfileSchema } from '../validation/authSchemas.js'
+import { createClient } from '@supabase/supabase-js'
 
 const router = express.Router()
 const authService = new AuthService()
 
 // POST /auth/register - Limité à 3 créations de compte par heure par IP
 router.post('/register', 
-    createAccountLimiter,
+    // createAccountLimiter,
     validateRequest(registerSchema),
     async (req, res) => {
         try {
@@ -18,12 +19,12 @@ router.post('/register',
                 req.body.email,
                 req.body.password,
                 req.body.role,
-                req.body.profileData
+                req.body.profileData ?? {}
             )
             res.status(201).json({
+                success: true,
                 message: 'Inscription réussie',
-                user: user,
-                profile: profile
+                data: { user, profile }
             })
         } catch (error) {
             return res.status(400).json({ 
@@ -35,7 +36,7 @@ router.post('/register',
 
 // POST /auth/login - Limité à 5 tentatives par heure par IP
 router.post('/login',
-    authLimiter,
+    // authLimiter,
     validateRequest(loginSchema),
     async (req, res) => {
         try {
@@ -44,26 +45,30 @@ router.post('/login',
                 req.body.password
             )
 
-            const setSessionCookie = (res, session) => {
-                const cookieOptions = {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
-                    sameSite: 'strict'
-                }
-                res.cookie('access_token', session.access_token, cookieOptions)
-                res.cookie('refresh_token', session.refresh_token, cookieOptions)
-            }
-            setSessionCookie(res, session)
-            
+            // const setSessionCookie = (res, session) => {
+            //     const cookieOptions = {
+            //         httpOnly: true,
+            //         secure: process.env.NODE_ENV === 'production',
+            //         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
+            //         sameSite: 'strict'
+            //     }
+            //     res.cookie('access_token', session.access_token, cookieOptions)
+            //     res.cookie('refresh_token', session.refresh_token, cookieOptions)
+            // }
+            // setSessionCookie(res, session)
+
             res.json({
+                success: true,
                 message: 'Connexion réussie',
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    role: profile.role
-                },
-                profile: profile,
+                data: {
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        role: profile.role,
+                        access_token: session.access_token,
+                        refresh_token: session.refresh_token
+                    },
+                }
             })
         } catch (error) {
             return res.status(401).json({
@@ -74,14 +79,11 @@ router.post('/login',
 )
 
 // POST /auth/logout
-router.post('/logout', requireAuth, async (req, res) => {
+router.post('/logout', async (req, res) => {
     try {
         await authService.logoutUser()
-        
-        res.clearCookie('access_token')
-        res.clearCookie('refresh_token')
-        
         res.json({ 
+            success: true,
             message: 'Déconnexion réussie',
         })
     } catch (error) {
@@ -95,8 +97,11 @@ router.post('/logout', requireAuth, async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
     try {
         res.json({
+            success: true,
             message: 'Profil récupéré',
-            profile: req.user,
+            data: {
+                user: req.user,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -114,8 +119,11 @@ router.patch('/profile',
             const updatedProfile = await authService.updateProfile(req.user.id, req.body)
             
             res.json({
+                success: true,
                 message: 'Profil mis à jour',
-                profile: updatedProfile
+                data: {
+                    profile: updatedProfile
+                }
             })
         } catch (error) {
             res.status(400).json({
@@ -124,8 +132,26 @@ router.patch('/profile',
         }
     }
 )
-  
-// Error handling middleware
+
+// GET /auth/confirm
+router.get('/confirm', async (req, res) => {
+    const token_hash = req.query.token_hash
+    const type = req.query.type
+    const next = req.query.next ?? "/"
+    if (token_hash && type) {
+      const supabase = createClient({ req, res })
+      const { error } = await supabase.auth.verifyOtp({
+        type,
+        token_hash,
+      })
+      if (!error) {
+        res.redirect(303, `/${next.slice(1)}`)
+      }
+    }
+    // return the user to an error page with some instructions
+    res.redirect(303, '/auth/auth-code-error')
+})
+    // Error handling middleware
 router.use((error, req, res, next) => {
     console.error('Auth Error:', error.message)
     
@@ -146,5 +172,6 @@ router.use((error, req, res, next) => {
         ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     })
 })
-  
+
+
 export default router
