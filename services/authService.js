@@ -133,6 +133,7 @@ export class AuthService {
             }
 
             logInfo('Déconnexion réussie');
+            
             return true
         } catch (error) {
             logError('Erreur lors de la déconnexion', error);

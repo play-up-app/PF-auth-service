@@ -7,7 +7,18 @@ const logger = winston.createLogger({
   
   // Format simple pour les logs
   format: winston.format.combine(
-    winston.format.timestamp(),
+    winston.format.timestamp({
+      format: () => new Date().toLocaleString('fr-FR', {
+        timeZone: 'Europe/Paris',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      })
+    }),
     winston.format.json()
   ),
   

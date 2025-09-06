@@ -3,7 +3,9 @@ import { AuthService } from '../services/authService.js'
 const authService = new AuthService()
 
 const requireAuth = async (req, res, next) => {
-    const token = req.cookies.access_token
+    // token from header Bearer Authorization
+    const token = req.headers.authorization?.split(' ')[1]
+    console.log("token", token)
     if (!token) {
         return res.status(401).json({ error: 'Token requis' })
     }
@@ -26,12 +28,12 @@ const requireAuth = async (req, res, next) => {
 const requireRole = (allowedRoles) => {
     return (req, res, next) => {
         // I. Vérification de l'authentification
-        if (!req.profile) {
+        if (!req.user) {
             return res.status(401).json({ error: 'Authentification requise' })
         }
       
         // II. Vérification du rôle
-        const userRole = req.profile.role
+        const userRole = req.user.role
         const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
       
         if (!roles.includes(userRole)) {
